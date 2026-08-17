@@ -78,6 +78,14 @@ BLSM1|<mint>|<symbol>|<mcapCallUsd>|<tsCallMs>|<feed>|<smartCount>|<conviction>
 
 Solana's RPC prefixes memos with their byte length (`[91] BLSM1|…`); the parser strips that. Verify any single call by hand at `https://solscan.io/tx/<signature>`.
 
+## Nine Solana bugs that cost us weeks
+
+Every hard-won mainnet gotcha we hit building this — Token-2022 accounts vanishing from close loops, compute budgets consumed by instructions you didn't write, a platform fee the docs permit and the program rejects, market data that corrupts instead of erroring, and five more. What we expected, what actually happened, how to detect it, and what fixed it.
+
+**→ [SOLANA-GOTCHAS.md](./SOLANA-GOTCHAS.md)**
+
+Published as a public good. None of it announced itself; all of it is waiting for anyone building trading, reclaim, or portfolio tooling on Solana.
+
 ## The app the record belongs to
 
 The scanner is one half. The other half is [blossomscanner.dev](https://blossomscanner.dev) — a trading app built on the same rule: every number a user sees is one they can check themselves.
