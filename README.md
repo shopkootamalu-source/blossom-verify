@@ -78,6 +78,25 @@ BLSM1|<mint>|<symbol>|<mcapCallUsd>|<tsCallMs>|<feed>|<smartCount>|<conviction>
 
 Solana's RPC prefixes memos with their byte length (`[91] BLSM1|…`); the parser strips that. Verify any single call by hand at `https://solscan.io/tx/<signature>`.
 
+## For machines: the agent endpoint
+
+```
+GET https://blossomscanner.dev/api/agent
+```
+
+One call, no documentation required. It describes itself — what the record is, where it came from, and the exact `getTransaction` call that verifies **each individual signal** against Solana without trusting the server that served it.
+
+The honest limits are structured fields rather than prose, so an agent reporting only the winners would have to ignore the schema to do it:
+
+```json
+"isFinancialAdvice": false,
+"guaranteesOutcomes": false,
+"whatIsProven": "That each call was recorded on Solana before its outcome was known.",
+"whatIsNotProven": "That any call was, or will be, profitable."
+```
+
+Every other signal API asks a machine to trust its output. This one ships the procedure for disproving it — because a claim an agent can check is worth more than one it has to accept. An autonomous agent verified this feed manually before the endpoint existed; now that loop is a single request.
+
 ## Nine Solana bugs that cost us weeks
 
 Every hard-won mainnet gotcha we hit building this — Token-2022 accounts vanishing from close loops, compute budgets consumed by instructions you didn't write, a platform fee the docs permit and the program rejects, market data that corrupts instead of erroring, and five more. What we expected, what actually happened, how to detect it, and what fixed it.
