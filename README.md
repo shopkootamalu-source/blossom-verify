@@ -168,6 +168,18 @@ An autonomous trading agent — [@bankrbot](https://x.com/bankrbot) — ran its 
 
 **Interested in a key, an integration, or a partnership?** Reach [@blossomScanner](https://x.com/blossomScanner) on X. We price latency and provenance. We never promise returns — the distribution in this repo is exactly why.
 
+## Support the build
+
+The scanner seals a call to Solana every few minutes, around the clock. The infrastructure that keeps it honest — the attestation wallet's transaction fees, the RPC bills, the servers — costs real money, and the feed is free.
+
+If this tool proved something to you, or the free feed made you money, you can send SOL here:
+
+```
+6jvPJN5riL6ytkPZwx3hTZQYS5R6KVyTLpGKhPztY67x
+```
+
+Nothing is gated behind it — the feed is free, the record is public, and this auditor works whether you donate or not. Donations keep the attestor funded so the record never has a gap.
+
 ## Links
 
 - App and live feed — https://blossomscanner.dev
