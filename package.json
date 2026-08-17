@@ -1,0 +1,11 @@
+{
+  "name": "blossom-verify",
+  "version": "1.0.0",
+  "description": "Rebuild Blossom Scanner's entire track record from the Solana blockchain — independently, with no trust in blossomscanner.dev.",
+  "type": "module",
+  "bin": { "blossom-verify": "verify.js" },
+  "scripts": { "start": "node verify.js" },
+  "engines": { "node": ">=18" },
+  "keywords": ["solana", "on-chain", "verification", "memecoin", "track-record", "attestation"],
+  "license": "MIT"
+}
