@@ -36,6 +36,24 @@ across several individually-innocent transfers. It also asserts the guard
 ACCEPTS the real ape, sell, sweep and close shapes — a guard that blocks the
 product is also a bug.
 
+## Proven on mainnet
+
+The design is not theoretical. A funded round trip on 2026-08-20
+(wallet `575u6ymGozvDmaAkqxk4saW6afRHhvmZjKM1Zw7U1gX2`, six transactions, zero
+failures) exercised every path in this directory:
+
+```
+deposit  0.02 SOL in                          one wallet popup, the only one
+ape      -0.012823 -> 40,313.34 tokens        zero popups, guard-approved
+sell     +0.013740, bag to exactly zero       zero popups, guard-approved
+close    +0.002069 rent, BEFORE the sweep     the ordering that saves it
+sweep    -0.022986 out, balance 0             guard-approved
+```
+
+Net: 0.020000 in, 0.022986 out. The close-before-move step recovered 0.002069
+SOL that a naive sweep would have left behind in a wallet the user was walking
+away from — 69% of the round trip's net profit.
+
 ## What the security model actually is
 
 Stated precisely, because the useful version of this is never the marketing
