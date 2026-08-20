@@ -74,58 +74,97 @@ export async function appendTurboLog(
   detail: Record<string, unknown> = {},
 ): Promise<void> {
   if (!logSupported()) return;
-  try {
-    const db = await openDb();
+  // Two events fired in the same tick (sign → landed, or a close batch loop)
+  // both read the same tail and computed the same seq; `add` rejected the
+  // loser with a ConstraintError, the catch swallowed it, and the event
+  // VANISHED from a chain that still verified as intact. A dropped event in a
+  // log whose purpose is answering an accusation is the worst kind of bug:
+  // silent, and only discovered when it matters. Retry on collision.
+  for (let attempt = 0; attempt < 5; attempt += 1) {
     try {
-      const entries = await readAll(db);
-      const last = entries[entries.length - 1];
-      const base = {
-        seq: (last?.seq ?? 0) + 1,
-        at: Date.now(),
-        event,
-        detail,
-        prevHash: last?.hash ?? "genesis",
-      };
-      const hash = await sha256Hex(preimage(base));
-      await new Promise<void>((resolve, reject) => {
-        const tx = db.transaction(STORE, "readwrite");
-        tx.objectStore(STORE).add({ ...base, hash });
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error ?? new Error("log write failed"));
-      });
-    } finally {
-      db.close();
+      const db = await openDb();
+      try {
+        const entries = await readAll(db);
+        const last = entries[entries.length - 1];
+        const base = {
+          seq: (last?.seq ?? 0) + 1,
+          at: Date.now(),
+          event,
+          detail,
+          prevHash: last?.hash ?? "genesis",
+        };
+        const hash = await sha256Hex(preimage(base));
+        await new Promise<void>((resolve, reject) => {
+          const tx = db.transaction(STORE, "readwrite");
+          tx.objectStore(STORE).add({ ...base, hash });
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error ?? new Error("log write failed"));
+        });
+        return;
+      } finally {
+        db.close();
+      }
+    } catch (cause) {
+      const name = (cause as { name?: string } | null)?.name;
+      if (name !== "ConstraintError") return; // not a collision — give up quietly
+      // Someone else took our seq. Re-read and try again.
     }
-  } catch {
-    // A broken log must never break the wallet.
   }
 }
 
-/** The full chain, oldest first. Empty on any failure. */
-export async function exportTurboLog(): Promise<TurboLogEntry[]> {
-  if (!logSupported()) return [];
+/**
+ * The full chain, oldest first.
+ *
+ * `readable` distinguishes "the log is empty" from "the log could not be
+ * read" — collapsing those was how an unreadable log reported itself INTACT,
+ * which is precisely the claim this module exists to make honestly.
+ */
+export async function exportTurboLog(): Promise<{ entries: TurboLogEntry[]; readable: boolean }> {
+  if (!logSupported()) return { entries: [], readable: false };
   try {
     const db = await openDb();
     try {
-      return (await readAll(db)).sort((a, b) => a.seq - b.seq);
+      return { entries: (await readAll(db)).sort((a, b) => a.seq - b.seq), readable: true };
     } finally {
       db.close();
     }
   } catch {
-    return [];
+    return { entries: [], readable: false };
   }
 }
+
+export type TurboLogVerdict = {
+  /** True only for a chain that was READ and whose every link recomputes. */
+  ok: boolean;
+  length: number;
+  brokenAt?: number;
+  /** False when the store could not be opened or read at all. */
+  readable: boolean;
+  /**
+   * What the chain can and cannot prove, carried WITH the verdict so it
+   * travels into whatever the user pastes. A hash chain proves nothing was
+   * edited or removed from the middle of what this app recorded; it cannot
+   * prove the log is complete, because a truncated tail — or a profile wiped
+   * entirely — verifies exactly like an honest short chain. The on-chain
+   * attestation is the append-only record; this is the local companion.
+   */
+  scope: string;
+};
+
+const SCOPE =
+  "This chain proves nothing was edited or deleted from the middle of what this app recorded on this device. It cannot prove completeness: a truncated tail verifies like an honest short chain, and it never sees what other code did with the key.";
 
 /** Recompute every link. Anyone can run this on an exported log too. */
-export async function verifyTurboLog(): Promise<{ ok: boolean; length: number; brokenAt?: number }> {
-  const entries = await exportTurboLog();
+export async function verifyTurboLog(): Promise<TurboLogVerdict> {
+  const { entries, readable } = await exportTurboLog();
+  if (!readable) return { ok: false, length: 0, readable: false, scope: SCOPE };
   let prev = "genesis";
   for (const entry of entries) {
     const expected = await sha256Hex(preimage({ ...entry, prevHash: prev }));
     if (entry.prevHash !== prev || entry.hash !== expected) {
-      return { ok: false, length: entries.length, brokenAt: entry.seq };
+      return { ok: false, length: entries.length, brokenAt: entry.seq, readable: true, scope: SCOPE };
     }
     prev = entry.hash;
   }
-  return { ok: true, length: entries.length };
+  return { ok: true, length: entries.length, readable: true, scope: SCOPE };
 }

@@ -333,6 +333,11 @@ export async function loadTurboWallet(): Promise<TurboWalletInfo | null> {
  * message bytes through assessTurboMessage and sign only on an `ok` verdict.
  * Callers today: ape() and sweep() in TurboWallet.tsx, both guarded. Adding
  * an unguarded one silently falsifies the claims in turbo-guard.ts.
+ *
+ * Callers as of 2026-08-20: ape(), sell(), closeEmptyAccounts() and sweep()
+ * in TurboWallet.tsx — all four routed through ONE signAndSend() which does
+ * the guarding, and whose spend-ceiling argument is REQUIRED so a new caller
+ * cannot inherit an unbounded assessment by omission.
  */
 export async function signWithTurbo(message: Uint8Array): Promise<Uint8Array> {
   const record = await getRecord();
