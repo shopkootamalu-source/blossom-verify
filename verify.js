@@ -309,7 +309,7 @@ async function currentMarketCaps(mints) {
   }
   console.log("");
   console.log("Check any line above yourself:  https://solscan.io/tx/<signature>");
-  console.log("Full record + the app:          https://blossomscanner.dev/track-record");
+  console.log("Full record + the app:          https://blossomtrade.dev/track-record");
 })().catch((cause) => {
   console.error("\nverification failed:", scrub(cause.message));
   console.error("(a public RPC may be rate-limiting — retry, or pass --rpc <your endpoint>)");

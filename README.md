@@ -107,29 +107,17 @@ Published as a public good. None of it announced itself; all of it is waiting fo
 
 ## The app the record belongs to
 
-The scanner is one half. The other half is [blossomscanner.dev](https://blossomscanner.dev) — a trading app built on the same rule: every number a user sees is one they can check themselves.
+The scanner is one half. The other half is [blossomtrade.dev](https://blossomtrade.dev) — a trading app built on the same rule: every number a user sees is one they can check themselves.
 
-**It never holds your money.** No deposits, no balances, no accounts. Keys stay in the user's own wallet, every transaction is signed by them, and every payout lands at their own address. There is nothing here to withdraw, because there is nothing here to hold.
+**In the app, it never holds your money.** Keys stay in the user's own wallet, every app transaction is signed by them, and every payout lands at their own address. The one exception is opt-in: the agent API's trading wallet is a server-held, encrypted hot wallet that holds only the SOL a user deposits into it for their agent to spend. Fund it small.
 
-**Swap — any Solana token to any other, in one transaction, 0.75% flat on every pair.** The price impact, the route and the fee are all shown *before* signing, not after. Wallets typically charge more and show less.
+**Swap — any Solana token to any other, in one transaction, with a 0% Blossom fee.** The price impact and the route are shown *before* signing, not after. Network and DEX fees still apply.
 
 **Send — SOL transfers at the network's own minimum, 0.000005 SOL.** No platform fee and no priority bidding added on top. That is the floor a Solana transaction can cost, and it means more of the amount actually arrives.
 
-**Reclaim — get back the SOL your dead memecoins are sitting on.** Every token account you ever opened holds roughly 0.002 SOL of your own rent deposit. When the coin dies, that deposit doesn't come back on its own. Reclaim finds those accounts, closes them, and returns the SOL to your address for a 1% fee — the lowest of any Solana reclaim tool.
+**Reclaim — get back the SOL your dead memecoins are sitting on.** Every token account you ever opened holds roughly 0.002 SOL of your own rent deposit. When the coin dies, that deposit doesn't come back on its own. Reclaim finds those accounts, closes them, and returns the SOL to your address for a 1% fee.
 
 Every one of those fee claims is checkable the same way the track record is: the fee accounts are public, on-chain, and permanent. Nobody has to take our word for the fees either.
-
-### Cheaper, on published numbers
-
-| | Blossom | Phantom |
-|---|---|---|
-| swap fee | **0.75% flat — every pair, no exceptions** | 0.85%, *"charged on select swap pairs"* |
-| sending SOL | **0.000005 SOL — the network minimum, nothing added** | priority fees applied on top |
-| reclaiming dead rent | **1%** | not offered |
-
-Phantom's figure and wording are quoted from their own help centre, read on 16 August 2026. We don't publish a rival's number we haven't checked ourselves that week, and we date it so you can catch it going stale.
-
-On a swap that's 0.10% back in your pocket on every pair, every time. On a max send it's the priority bid you were never told about — the difference lands in the amount that actually arrives.
 
 ### Faster, because there's nothing in the middle
 
@@ -151,9 +139,9 @@ That's the entire reason the feed and the app are one product. A call you can se
 
 ### And on the way out
 
-The pipeline is built to keep as much of the money as the network allows: reclaim the rent your dead bags are sitting on, swap at 0.75% flat, then send to your exchange at 0.000005 SOL with nothing added on top.
+The pipeline is built to keep as much of the money as the network allows: reclaim the rent your dead bags are sitting on, swap with no Blossom fee, then send to your exchange at 0.000005 SOL with nothing added on top.
 
-Each step is the cheapest version of itself, so the number that lands in your exchange account is the largest one available. That's the point of building it this way.
+Each step adds no Blossom fee beyond the 1% on Reclaim, so as much of the amount as the network allows lands in your exchange account. That's the point of building it this way.
 
 ## How the seal actually works
 
@@ -209,8 +197,9 @@ Nothing is gated behind it — the feed is free, the record is public, and this 
 
 ## Links
 
-- App and live feed — https://blossomscanner.dev
-- Full track record — https://blossomscanner.dev/track-record
+- App and live feed — https://blossomtrade.dev
+- Full track record — https://blossomtrade.dev/track-record
+- Live sealed-call count — https://blossomtrade.dev/api/sealed-count
 - Free call feed — https://t.me/blossomscanner
 - The wallet — https://solscan.io/account/954wdksZqnk9RQRJpgq564omv5aAiLfTG8Fqqb5y6AD9
 
@@ -225,13 +214,12 @@ It does not grant use of the Blossom Scanner name, branding, or track record to 
 | we say | check it |
 |---|---|
 | calls are sealed before their outcomes | `node verify.js` — reads the memos and the validator block times off Solana |
-| ~9,400 of them, and counting | the same command; the wallet is public |
+| tens of thousands of them, and counting — live total at [`/api/sealed-count`](https://blossomtrade.dev/api/sealed-count) | the same command with an archival `--rpc`; the wallet is public |
 | we publish our losers | `node verify.js --outcomes 50` — prints the rug bucket first |
 | most of our calls go nowhere | same command; our median call sits near break-even |
-| swap is 0.75%, reclaim is 1% | the fee accounts are public on-chain — read what actually arrived |
-| the app never holds your money | connect a wallet and look: no deposit exists to make |
-| Phantom charges 0.85% on select pairs | their own help centre, read 16 Aug 2026 — go read it again today |
-| fresh coins are tradeable here first | paste a ten-minute-old CA into both and see which one quotes |
+| Blossom's fee: swap 0%, send 0%, reclaim 1% | the fee accounts are public on-chain — read what actually arrived |
+| the app never holds your money (the opt-in agent trading wallet is the exception, and says so) | connect a wallet and look: the app asks for no deposit |
+| fresh coins are priced straight off the bonding curve | paste a ten-minute-old CA into the app and see it quote |
 
 Not one of those asks for the benefit of the doubt.
 
